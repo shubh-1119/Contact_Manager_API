@@ -31,7 +31,7 @@ This is a RESTful API for managing contacts, built using Spring MVC, Hibernate, 
 
 #### **API Endpoints**
 
-All endpoints use the base URL: http://localhost:8080/contact-manager-api/contacts
+All endpoints use the base URL: http://localhost:8080/ContactManager/contacts
 
 | Method | Endpoint | Description |
 | :---- | :---- | :---- |
