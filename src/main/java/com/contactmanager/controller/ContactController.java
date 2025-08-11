@@ -1,7 +1,10 @@
 package com.contactmanager.controller;
 
+import java.io.File;
 import java.util.List;
+import java.util.UUID;
 
+import javax.servlet.ServletContext;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.contactmanager.model.Contact;
 import com.contactmanager.service.ContactService;
@@ -27,6 +31,9 @@ public class ContactController {
 
 	@Autowired
 	private ContactService contactService;
+	
+	@Autowired
+	ServletContext servletContext;
 	
 	// save contacts
 	@PostMapping
@@ -66,13 +73,6 @@ public class ContactController {
 		} 
 	}
 	
-	//get all contacts
-	/* @GetMapping
-	public ResponseEntity<List<Contact>> getContactList(){
-		List<Contact> list = contactService.list();
-		return new ResponseEntity<>(list, HttpStatus.OK);
-	} */
-	
 	//get searched contact by name or email
 	@GetMapping("/search")
 	public ResponseEntity<List<Contact>> serchContact(@RequestParam("query") String query){
@@ -97,5 +97,42 @@ public class ContactController {
 		return new ResponseEntity<>(contacts, HttpStatus.OK);
 	}
 	
+	@PostMapping("/{id}/image")
+	public ResponseEntity<String> uploadImage(@PathVariable("id") Long id, MultipartFile file){
+		if(file.isEmpty()) {
+			return new ResponseEntity<>("Select File to upload", HttpStatus.BAD_REQUEST);
+		}
+		
+		try {
+			Contact contact = contactService.get(id);
+			if(contact == null) {
+				return new ResponseEntity<>("Contact not available with id: "+id, HttpStatus.NOT_FOUND);			
+			}
+			
+			String rootPath = servletContext.getRealPath("/");
+			File uploadDir = new File(rootPath + "resources" + File.separator + "images"); 
+			if(!uploadDir.exists()) {
+				uploadDir.mkdir();
+			}
+			
+			String originalFileName = file.getOriginalFilename();
+			String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+			String uniqueFileName = UUID.randomUUID() + fileExtension;
+			
+			File dest = new File(uploadDir, uniqueFileName);
+			
+			//saving file
+			file.transferTo(dest);
+			
+			//update the contact
+			String relativePath = "/resources/images/" + uniqueFileName;
+			contact.setProfileImagePath(relativePath);
+			contactService.update(id, contact);		
+			return new ResponseEntity<>("File uploaded successfully" + uploadDir, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>("File upload Error" + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 	
 }
