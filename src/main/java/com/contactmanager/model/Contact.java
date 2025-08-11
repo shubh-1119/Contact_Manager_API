@@ -34,6 +34,8 @@ public class Contact {
 	@Column(name="phone_number")
 	private String phoneNumber;
 	
+	@Column(name = "profile_image_path")
+	private String profileImagePath;
 
 	public long getId() {
 		return id;
@@ -75,12 +77,18 @@ public class Contact {
 		this.phoneNumber = phoneNumber;
 	}
 
+	public String getProfileImagePath() {
+		return profileImagePath;
+	}
+
+	public void setProfileImagePath(String profileImagePath) {
+		this.profileImagePath = profileImagePath;
+	}
+
 	@Override
 	public String toString() {
 		return "Contact [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", email=" + email
-				+ ", phoneNumber=" + phoneNumber + "]";
+				+ ", phoneNumber=" + phoneNumber + ", profileImagePath=" + profileImagePath + "]";
 	}
-
-	
 	
 }
